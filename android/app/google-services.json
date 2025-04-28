@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "560318219592",
+    "project_id": "mentimeter-0",
+    "storage_bucket": "mentimeter-0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:560318219592:android:ad503da4adf49a344e5f7d",
+        "android_client_info": {
+          "package_name": "com.example.mentimeter_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDggYtjUUsgD7ELnCpyPrM_hHo7XN8HqYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
