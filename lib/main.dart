@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mentimeter_app/screens/admin/home_screen.dart';
 import 'package:mentimeter_app/screens/auth/login_screen.dart';
 import 'package:mentimeter_app/screens/auth/reset_password_screen.dart';
 import 'package:mentimeter_app/screens/auth/signup_screen.dart';
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/signup': (context) => const SignupScreen(),
         '/reset-password': (context) => const ResetPasswordScreen(),
-        // Add other routes here
+        '/home': (context) => const AdminHomeScreen(),
       },
     );
   }
@@ -63,16 +64,9 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          // User is logged in, navigate to home screen
-          // TODO: Replace with your home screen
-          return const Scaffold(
-            body: Center(
-              child: Text('Home Screen - TODO: Implement'),
-            ),
-          );
+          return const AdminHomeScreen();
         }
 
-        // User is not logged in, show login screen
         return const LoginScreen();
       },
     );
