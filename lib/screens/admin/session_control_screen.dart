@@ -33,6 +33,7 @@ class _SessionControlScreenState extends State<SessionControlScreen> {
   int _remainingTime = 0;
   bool _autoAdvance = true;
   bool _timerStarted = false;
+  bool _quizStarted = false;
   
   @override
   void initState() {
@@ -55,14 +56,11 @@ class _SessionControlScreenState extends State<SessionControlScreen> {
         _currentQuestionIndex = widget.session.currentQuestionIndex;
       });
       
-      // Démarrer le timer immédiatement après le chargement des questions
-      _startQuestionTimer();
-      
-      // Enregistrer que nous avons démarré le timer
-      _timerStarted = true;
-      
-      // Mettre à jour également la session pour signaler que le timer a été démarré
-      await _sessionService.updateSessionTimerState(widget.session.id, true);
+      // Don't start timer automatically - wait for user to press start button
+      // Set initial remaining time without starting the timer
+      if (_questions.isNotEmpty) {
+        _remainingTime = _questions[_currentQuestionIndex].timeLimit;
+      }
       
     } catch (e) {
       if (mounted) {
@@ -236,6 +234,94 @@ class _SessionControlScreenState extends State<SessionControlScreen> {
     return '$minutes:${remainingSeconds.toString().padLeft(2, '0')}';
   }
   
+  Future<void> _startQuiz() async {
+    if (_quizStarted) return; // Prevent starting twice
+    
+    try {
+      // Set the quiz as started
+      setState(() {
+        _quizStarted = true;
+        _timerStarted = true;
+      });
+      
+      // Update the session in Firestore to indicate the timer has started
+      await _sessionService.updateSessionTimerState(widget.session.id, true);
+      
+      // Start the timer for the first question
+      _startQuestionTimer();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Quiz started! Timer is now running.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error starting quiz: ${e.toString()}')),
+      );
+    }
+  }
+  
+  Future<void> _resetSession() async {
+    // Ask for confirmation before resetting
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Session'),
+        content: const Text(
+          'Are you sure you want to reset this session? This will:'
+          '\n- Return to the first question'
+          '\n- Reset all timers'
+          '\n- Allow participants to rejoin from the beginning'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+            ),
+            child: const Text('Reset Session'),
+          ),
+        ],
+      ),
+    );
+    
+    if (confirmed == true) {
+      try {
+        _questionTimer?.cancel(); // Cancel current timer
+        
+        // Reset the session in Firestore
+        await _sessionService.resetSession(widget.session.id);
+        
+        // Update local state
+        setState(() {
+          _currentQuestionIndex = 0;
+          _timerStarted = false;
+          _quizStarted = false;
+          if (_questions.isNotEmpty) {
+            _remainingTime = _questions[0].timeLimit;
+          }
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session has been reset successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error resetting session: ${e.toString()}')),
+        );
+      }
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -273,6 +359,48 @@ class _SessionControlScreenState extends State<SessionControlScreen> {
                       IconButton(
                         icon: const Icon(Icons.copy),
                         onPressed: _copyAccessCode,
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Participant count and start button
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Participants: $_participantCount',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          if (_quizStarted)
+                            TextButton.icon(
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('Reset'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.orange,
+                              ),
+                              onPressed: _resetSession,
+                            ),
+                          const SizedBox(width: 8),
+                          if (!_quizStarted)
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.play_arrow),
+                              label: const Text('Start Quiz'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              ),
+                              onPressed: _startQuiz,
+                            ),
+                        ],
                       ),
                     ],
                   ),

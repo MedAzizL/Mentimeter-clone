@@ -194,4 +194,22 @@ class SessionService {
       return false;
     }
   }
+  
+  // Reset a session to its initial state
+  Future<bool> resetSession(String sessionId) async {
+    try {
+      await _firestore
+          .collection(_sessionsCollection)
+          .doc(sessionId)
+          .update({
+            'currentQuestionIndex': 0,
+            'timerStarted': false,
+            'remainingTime': 0,
+          });
+      return true;
+    } catch (e) {
+      print('Error resetting session: $e');
+      return false;
+    }
+  }
 } 

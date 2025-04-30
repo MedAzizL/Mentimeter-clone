@@ -29,6 +29,8 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
   final _quizService = QuizService();
   final _sessionService = SessionService();
   
+  late Session _session; // Local mutable copy of the session
+  
   List<Question> _questions = [];
   List<Answer> _currentAnswers = [];
   int _currentQuestionIndex = 0;
@@ -46,6 +48,8 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
   @override
   void initState() {
     super.initState();
+    // Create a local copy of the session that we can modify
+    _session = widget.session;
     _loadQuestions();
     _startListeningToSession();
   }
@@ -62,10 +66,14 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
     try {
       _questions = await _quizService.getQuestionsByQuizId(widget.quiz.id);
       setState(() {
-        _currentQuestionIndex = widget.session.currentQuestionIndex;
+        _currentQuestionIndex = _session.currentQuestionIndex;
       });
       await _loadCurrentAnswers();
-      _startQuestionTimer();
+      
+      // Only start timer if the session timer has already started
+      if (_session.timerStarted) {
+        _startQuestionTimer();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -170,8 +178,8 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
     // Cancel existing timer if any
     _sessionCheckTimer?.cancel();
     
-    // Create a new timer that checks more frequently (every 2 seconds)
-    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    // Create a new timer that checks more frequently (every 1 second)
+    _sessionCheckTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -183,7 +191,9 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
   
   Future<void> _checkForQuestionChange() async {
     try {
-      final updatedSession = await _sessionService.getSessionById(widget.session.id);
+      final updatedSession = await _sessionService.getSessionById(_session.id);
+      print('Session check: timerStarted=${updatedSession?.timerStarted}, local timerStarted=${_session.timerStarted}'); 
+      
       if (updatedSession == null || !updatedSession.isActive) {
         // Session ended
         if (mounted && !_quizCompleted) {
@@ -194,9 +204,17 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
         return;
       }
       
-      // Vérifier si le timer a démarré dans la session
-      if (updatedSession.timerStarted && (_questionTimer == null || !_questionTimer!.isActive)) {
-        // Si le temps dans la session est plus petit, utiliser celui-ci car il est plus précis
+      // Check if the timer has started in the session
+      if (updatedSession.timerStarted && !_session.timerStarted) {
+        print('Quiz just started! Updating local state');
+        // Quiz has just started - update local session state
+        setState(() {
+          _session = updatedSession;
+        });
+        await _loadCurrentAnswers();
+        _startQuestionTimer();
+      } else if (updatedSession.timerStarted && (_questionTimer == null || !_questionTimer!.isActive)) {
+        // If the time in the session is smaller, use it as it's more precise
         if (updatedSession.remainingTime > 0 && 
             (updatedSession.remainingTime < _remainingTime || _remainingTime <= 0)) {
           setState(() {
@@ -206,7 +224,7 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
         _startQuestionTimer();
       }
       
-      // Si le temps restant est défini dans la session et est différent de notre valeur locale
+      // If remaining time is defined in the session and different from our local value
       if (updatedSession.remainingTime > 0 && 
           (updatedSession.remainingTime - _remainingTime).abs() > 3) {
         setState(() {
@@ -220,6 +238,8 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
         
         setState(() {
           _currentQuestionIndex = updatedSession.currentQuestionIndex;
+          // Update the session too
+          _session = updatedSession;
         });
         await _loadCurrentAnswers();
       }
@@ -365,6 +385,44 @@ class _QuizParticipationScreenState extends State<QuizParticipationScreen> {
           child: Text(
             'Waiting for the next question...',
             style: TextStyle(fontSize: 18),
+          ),
+        ),
+      );
+    }
+
+    // Quiz not started yet
+    if (!_session.timerStarted) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text('${widget.quiz.title} - Live'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.timer_outlined,
+                size: 64,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Waiting for the presenter to start the quiz...',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Get ready! The quiz will begin soon.',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You joined as: ${widget.participantName}',
+                style: const TextStyle(fontSize: 16, fontStyle: FontStyle.italic),
+              ),
+            ],
           ),
         ),
       );
