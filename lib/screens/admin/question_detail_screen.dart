@@ -267,163 +267,348 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Question' : 'New Question'),
+        title: Text(_isEditing ? 'Edit Question' : 'New Question', 
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+        ),
+        backgroundColor: const Color(0xFF3949AB),
+        elevation: 4,
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  TextFormField(
-                    controller: _textController,
-                    decoration: const InputDecoration(
-                      labelText: 'Question Text',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter the question text';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFF0F4FF),
+              Colors.white,
+            ],
+          ),
+        ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2D46B9))))
+            : SafeArea(
+                child: Form(
+                  key: _formKey,
+                  child: ListView(
+                    padding: const EdgeInsets.all(16.0),
                     children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _timeLimitController,
-                          decoration: const InputDecoration(
-                            labelText: 'Time Limit (seconds)',
-                            border: OutlineInputBorder(),
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3949AB),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          'Question Details',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter time limit';
-                            }
-                            final number = int.tryParse(value);
-                            if (number == null || number <= 0) {
-                              return 'Please enter a valid time limit';
-                            }
-                            return null;
-                          },
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _pointsController,
-                          decoration: const InputDecoration(
-                            labelText: 'Points',
-                            border: OutlineInputBorder(),
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextFormField(
+                                controller: _textController,
+                                decoration: InputDecoration(
+                                  labelText: 'Question Text',
+                                  hintText: 'Enter the question here',
+                                  prefixIcon: const Icon(Icons.help_outline, color: Color(0xFF2D46B9)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: const BorderSide(color: Color(0xFF2D46B9), width: 2),
+                                  ),
+                                ),
+                                maxLines: 3,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter the question text';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _timeLimitController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Time Limit (seconds)',
+                                        hintText: 'Enter time',
+                                        prefixIcon: const Icon(Icons.timer, color: Color(0xFF2D46B9)),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Color(0xFF2D46B9), width: 2),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter time limit';
+                                        }
+                                        final number = int.tryParse(value);
+                                        if (number == null || number <= 0) {
+                                          return 'Please enter a valid time limit';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: _pointsController,
+                                      decoration: InputDecoration(
+                                        labelText: 'Points',
+                                        hintText: 'Enter points',
+                                        prefixIcon: const Icon(Icons.star, color: Color(0xFF2D46B9)),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: BorderSide(color: Colors.grey.shade300),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                          borderSide: const BorderSide(color: Color(0xFF2D46B9), width: 2),
+                                        ),
+                                      ),
+                                      keyboardType: TextInputType.number,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter points';
+                                        }
+                                        final number = int.tryParse(value);
+                                        if (number == null || number <= 0) {
+                                          return 'Please enter valid points';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                          keyboardType: TextInputType.number,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter points';
-                            }
-                            final number = int.tryParse(value);
-                            if (number == null || number <= 0) {
-                              return 'Please enter valid points';
-                            }
-                            return null;
-                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3949AB),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Answer Options',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.add_circle, color: Colors.white, size: 28),
+                              onPressed: () {
+                                setState(() {
+                                  _answerControllers.add(TextEditingController());
+                                  _isCorrectAnswers.add(false);
+                                });
+                              },
+                              tooltip: 'Add Answer Option',
+                            ),
+                          ],
+                        ),
+                      ),
+                      Card(
+                        elevation: 8,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Check the correct answer',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ...List.generate(
+                                _answerControllers.length,
+                                (index) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: _isCorrectAnswers[index] 
+                                            ? const Color(0xFF4CAF50) 
+                                            : Colors.grey.shade300,
+                                        width: _isCorrectAnswers[index] ? 2 : 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: _isCorrectAnswers[index] 
+                                          ? Colors.green.shade50 
+                                          : Colors.transparent,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Checkbox(
+                                          value: _isCorrectAnswers[index],
+                                          activeColor: const Color(0xFF4CAF50),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          onChanged: (value) {
+                                            setState(() {
+                                              // Uncheck all other answers
+                                              for (int i = 0;
+                                                  i < _isCorrectAnswers.length;
+                                                  i++) {
+                                                _isCorrectAnswers[i] = false;
+                                              }
+                                              _isCorrectAnswers[index] = value!;
+                                            });
+                                          },
+                                        ),
+                                        Expanded(
+                                          child: TextFormField(
+                                            controller: _answerControllers[index],
+                                            decoration: InputDecoration(
+                                              labelText: 'Answer ${index + 1}',
+                                              hintText: 'Enter answer text',
+                                              border: InputBorder.none,
+                                              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                                            ),
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Please enter answer text';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.delete, color: Colors.red),
+                                          onPressed: () {
+                                            if (_answerControllers.length > 2) {
+                                              setState(() {
+                                                _answerControllers.removeAt(index);
+                                                _isCorrectAnswers.removeAt(index);
+                                              });
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text('You need at least 2 answers'),
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        width: double.infinity,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF3949AB),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 5,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: TextButton(
+                          onPressed: _isLoading ? null : _saveQuestion,
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  _isEditing ? 'Update Question' : 'Create Question',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18, 
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Answers',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  ...List.generate(
-                    _answerControllers.length,
-                    (index) => Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: _answerControllers[index],
-                              decoration: InputDecoration(
-                                labelText: 'Answer ${index + 1}',
-                                border: const OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter answer text';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Checkbox(
-                            value: _isCorrectAnswers[index],
-                            onChanged: (value) {
-                              setState(() {
-                                // Uncheck all other answers
-                                for (int i = 0;
-                                    i < _isCorrectAnswers.length;
-                                    i++) {
-                                  _isCorrectAnswers[i] = false;
-                                }
-                                _isCorrectAnswers[index] = value!;
-                              });
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete),
-                            onPressed: () {
-                              if (_answerControllers.length > 2) {
-                                setState(() {
-                                  _answerControllers.removeAt(index);
-                                  _isCorrectAnswers.removeAt(index);
-                                });
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('You need at least 2 answers'),
-                                  ),
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Answer Option'),
-                    onPressed: () {
-                      setState(() {
-                        _answerControllers.add(TextEditingController());
-                        _isCorrectAnswers.add(false);
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _isLoading ? null : _saveQuestion,
-                    child: _isLoading
-                        ? const CircularProgressIndicator()
-                        : Text(_isEditing ? 'Update Question' : 'Create Question'),
-                  ),
-                ],
+                ),
               ),
-            ),
+      ),
     );
   }
 } 

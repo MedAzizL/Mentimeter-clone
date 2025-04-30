@@ -40,7 +40,80 @@ class MyApp extends StatelessWidget {
       title: 'Mentimeter Clone',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2D46B9),
+          primary: const Color(0xFF2D46B9),
+          secondary: const Color(0xFF4CAF50),
+          background: Colors.white,
+          surface: Colors.white,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF3949AB),
+          elevation: 4,
+          iconTheme: IconThemeData(
+            color: Colors.white,
+            size: 26,
+          ),
+          actionsIconTheme: IconThemeData(
+            color: Colors.white,
+            size: 26,
+          ),
+          titleTextStyle: TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.bold, 
+            fontSize: 20,
+            letterSpacing: 0.5,
+          ),
+          toolbarHeight: 60,
+          centerTitle: false,
+          shadowColor: Color(0x663949AB),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: const Color(0xFF2D46B9),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF2D46B9),
+            side: const BorderSide(color: Color(0xFF2D46B9)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade300),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF2D46B9), width: 2),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          contentPadding: const EdgeInsets.all(16),
+        ),
+        cardTheme: CardTheme(
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFF2D46B9),
+          foregroundColor: Colors.white,
+        ),
         useMaterial3: true,
       ),
       home: const AuthWrapper(),
@@ -109,56 +182,133 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return const AdminHomeScreen();
     } else {
       return Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.network(
-                'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mentimeter_Logo.svg/1200px-Mentimeter_Logo.svg.png',
-                height: 100,
-              ),
-              const SizedBox(height: 40),
-              const Text(
-                'Welcome to Mentimeter',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 50),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/login'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 12,
+        extendBodyBehindAppBar: false,
+        appBar: AppBar(
+          backgroundColor: const Color(0xFF2D46B9),
+          elevation: 2,
+        ),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFFF0F4FF),
+                Colors.white,
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 120,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF2D46B9).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.network(
+                              'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mentimeter_Logo.svg/1200px-Mentimeter_Logo.svg.png',
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Welcome to Mentimeter',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF2D46B9),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            'Create interactive presentations and quizzes',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pushNamed(context, '/login'),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFF2D46B9),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Sign In as Admin',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pushNamed(context, '/signup'),
+                              style: ElevatedButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                backgroundColor: const Color(0xFF4CAF50),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text(
+                                'Sign Up as Admin',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pushNamed(context, '/participant/join'),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFF2D46B9),
+                                side: const BorderSide(color: Color(0xFF2D46B9)),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Join as Participant',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                child: const Text('Sign In as Admin'),
               ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, '/signup'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text('Sign Up as Admin'),
-              ),
-              const SizedBox(height: 40),
-              OutlinedButton(
-                onPressed: () => Navigator.pushNamed(context, '/participant/join'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text('Join as Participant'),
-              ),
-            ],
+            ),
           ),
         ),
       );
