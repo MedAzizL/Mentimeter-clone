@@ -39,6 +39,7 @@ dependencies:
   firebase_auth: ^4.15.3   # Si tu veux utiliser Authentification
   cloud_firestore: ^4.13.6 # Si tu veux utiliser Firestore
   uuid: ^4.3.3
+  url_launcher: ^6.2.4
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

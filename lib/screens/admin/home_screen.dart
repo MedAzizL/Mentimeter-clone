@@ -77,6 +77,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         title: const Text('My Quizzes'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.play_circle),
+            onPressed: () {
+              Navigator.pushNamed(context, '/admin/start_session');
+            },
+            tooltip: 'Start a Quiz Session',
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await _authService.signOut();

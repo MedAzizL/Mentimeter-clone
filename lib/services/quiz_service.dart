@@ -78,7 +78,18 @@ class QuizService {
     int points = 100,
   }) async {
     final questionId = const Uuid().v4();
-    final answerIds = answers.map((a) => a.id).toList();
+    
+    // Update all answers with the new questionId
+    final updatedAnswers = answers.map((answer) => 
+      Answer(
+        id: answer.id,
+        questionId: questionId,
+        text: answer.text,
+        isCorrect: answer.isCorrect,
+      )
+    ).toList();
+    
+    final answerIds = updatedAnswers.map((a) => a.id).toList();
 
     final question = Question(
       id: questionId,
@@ -97,7 +108,7 @@ class QuizService {
         .set(question.toMap());
 
     // Create answers
-    for (var answer in answers) {
+    for (var answer in updatedAnswers) {
       await _firestore
           .collection(_answersCollection)
           .doc(answer.id)
@@ -159,11 +170,40 @@ class QuizService {
         .toList();
   }
 
+  Future<Answer?> getAnswerById(String answerId) async {
+    try {
+      final doc = await _firestore
+          .collection(_answersCollection)
+          .doc(answerId)
+          .get();
+      
+      if (!doc.exists) return null;
+      return Answer.fromMap(doc.data() ?? {});
+    } catch (e) {
+      print('Error getting answer by ID: $e');
+      return null;
+    }
+  }
+
   Future<void> updateAnswer(Answer answer) async {
     await _firestore
         .collection(_answersCollection)
         .doc(answer.id)
         .update(answer.toMap());
+  }
+
+  Future<void> createAnswer(Answer answer) async {
+    await _firestore
+        .collection(_answersCollection)
+        .doc(answer.id)
+        .set(answer.toMap());
+  }
+
+  Future<void> deleteAnswer(String answerId) async {
+    await _firestore
+        .collection(_answersCollection)
+        .doc(answerId)
+        .delete();
   }
 
   // Quiz control operations

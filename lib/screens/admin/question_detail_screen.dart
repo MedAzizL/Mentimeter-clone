@@ -57,7 +57,7 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text('Error loading question: ${e.toString()}')),
         );
       }
     } finally {
@@ -100,24 +100,75 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
 
   Future<void> _saveQuestion() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-      try {
-        final answers = List.generate(
-          _answerControllers.length,
-          (index) => Answer(
-            id: const Uuid().v4(),
-            questionId: _question?.id ?? '',
-            text: _answerControllers[index].text,
-            isCorrect: _isCorrectAnswers[index],
+      // Check if at least one answer is marked as correct
+      if (!_isCorrectAnswers.contains(true)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please mark at least one answer as correct'),
+            backgroundColor: Colors.red,
           ),
         );
-
-        final correctAnswerId = answers
-            .firstWhere((answer) => answer.isCorrect)
-            .id;
-
+        return;
+      }
+      
+      // Check if there are at least 2 answer options
+      if (_answerControllers.length < 2) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You need at least 2 answer options'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      setState(() => _isLoading = true);
+      try {
         if (_isEditing) {
           // Update existing question
+          // First, get existing answers to compare
+          List<Answer> existingAnswers = await _quizService.getAnswersByQuestionId(_question!.id);
+          
+          // Create new answer objects with proper IDs
+          final answers = List.generate(
+            _answerControllers.length,
+            (index) {
+              // Check if this might be an existing answer we're updating
+              if (index < existingAnswers.length) {
+                // Update existing answer with new text and isCorrect value
+                return Answer(
+                  id: existingAnswers[index].id,
+                  questionId: _question!.id,
+                  text: _answerControllers[index].text,
+                  isCorrect: _isCorrectAnswers[index],
+                );
+              } else {
+                // This is a new answer
+                return Answer(
+                  id: const Uuid().v4(),
+                  questionId: _question!.id,
+                  text: _answerControllers[index].text,
+                  isCorrect: _isCorrectAnswers[index],
+                );
+              }
+            },
+          );
+          
+          // Make sure at least one answer is marked as correct
+          if (!answers.any((answer) => answer.isCorrect)) {
+            // If no answer is marked as correct, make the first one correct
+            answers[0] = Answer(
+              id: answers[0].id,
+              questionId: answers[0].questionId,
+              text: answers[0].text,
+              isCorrect: true,
+            );
+          }
+          
+          final correctAnswerId = answers
+              .firstWhere((answer) => answer.isCorrect)
+              .id;
+              
           final updatedQuestion = Question(
             id: _question!.id,
             quizId: _question!.quizId,
@@ -128,12 +179,63 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
             points: int.parse(_pointsController.text),
           );
 
+          // Update question first
           await _quizService.updateQuestion(updatedQuestion);
+          
+          // If we have existing answers to delete (fewer answers now than before)
+          if (existingAnswers.length > answers.length) {
+            // Delete excess answers from Firestore
+            for (int i = answers.length; i < existingAnswers.length; i++) {
+              await _quizService.deleteAnswer(existingAnswers[i].id);
+            }
+          }
+          
+          // Create or update answers
           for (var answer in answers) {
-            await _quizService.updateAnswer(answer);
+            // Try to find if this answer already exists
+            bool exists = false;
+            for (var existingAnswer in existingAnswers) {
+              if (existingAnswer.id == answer.id) {
+                exists = true;
+                break;
+              }
+            }
+            
+            if (exists) {
+              // Update existing answer
+              await _quizService.updateAnswer(answer);
+            } else {
+              // Create new answer
+              await _quizService.createAnswer(answer);
+            }
           }
         } else {
           // Create new question
+          final answers = List.generate(
+            _answerControllers.length,
+            (index) => Answer(
+              id: const Uuid().v4(),
+              questionId: _question?.id ?? const Uuid().v4(),
+              text: _answerControllers[index].text,
+              isCorrect: _isCorrectAnswers[index],
+            ),
+          );
+
+          // Make sure at least one answer is marked as correct
+          if (!answers.any((answer) => answer.isCorrect)) {
+            // If no answer is marked as correct, make the first one correct
+            answers[0] = Answer(
+              id: answers[0].id,
+              questionId: answers[0].questionId,
+              text: answers[0].text,
+              isCorrect: true,
+            );
+          }
+
+          final correctAnswerId = answers
+              .firstWhere((answer) => answer.isCorrect)
+              .id;
+              
           await _quizService.createQuestion(
             quizId: widget.quizId!,
             text: _textController.text,
@@ -148,9 +250,10 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
           Navigator.pop(context);
         }
       } catch (e) {
+        print('Error saving question: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(e.toString())),
+            SnackBar(content: Text('Error: ${e.toString()}')),
           );
         }
       } finally {
@@ -279,9 +382,37 @@ class _QuestionDetailScreenState extends State<QuestionDetailScreen> {
                               });
                             },
                           ),
+                          IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () {
+                              if (_answerControllers.length > 2) {
+                                setState(() {
+                                  _answerControllers.removeAt(index);
+                                  _isCorrectAnswers.removeAt(index);
+                                });
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('You need at least 2 answers'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Answer Option'),
+                    onPressed: () {
+                      setState(() {
+                        _answerControllers.add(TextEditingController());
+                        _isCorrectAnswers.add(false);
+                      });
+                    },
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton(
