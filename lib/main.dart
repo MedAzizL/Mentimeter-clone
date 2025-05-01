@@ -221,8 +221,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
                               color: const Color(0xFF2D46B9).withOpacity(0.1),
                               shape: BoxShape.circle,
                             ),
-                            child: Image.network(
-                              'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Mentimeter_Logo.svg/1200px-Mentimeter_Logo.svg.png',
+                            child: const Icon(
+                              Icons.poll,
+                              size: 60,
+                              color: Color(0xFF2D46B9),
                             ),
                           ),
                           const SizedBox(height: 24),
